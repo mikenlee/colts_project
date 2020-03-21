@@ -46,7 +46,8 @@ dat2 <- dat %>%
   mutate(year_enterNFL = as.numeric(year_enterNFL)) %>% 
   #new columns
   mutate(award_school = paste(award_name, school, sep = "_"),
-         division = "A") %>% 
+         division = "A",
+         award_name = paste(award_name, award_scope, sep = "_")) %>% 
   #separate first and last to switch order to join with key
   tidyr::extract(name, c("FirstName", "LastName"), "([^ ]+) (.*)") %>% 
   mutate(LastName = str_punct(LastName),
@@ -112,7 +113,8 @@ dat2_AA <- dat_AA %>%
            award_year = as.numeric(award_year)) %>% 
     #new columns
     mutate(award_school = paste(award_name, school, sep = "_"),
-           division = "AA")  %>% 
+           division = "AA",
+           award_name = paste(award_name, award_scope, sep = "_"))  %>% 
     #separate first and last to switch order to join with key
     tidyr::extract(name, c("FirstName", "LastName"), "([^ ]+) (.*)") %>% 
     mutate(LastName = str_punct(LastName),
@@ -150,37 +152,8 @@ dat_joined <- bind_rows(dat2, dat2_AA) %>%
   mutate(year_enterNFL = ifelse(name == "BOSA, NICK", 2019, year_enterNFL),
          year_enterNFL = ifelse(name == "HARRELL, GRAHAM", 2010, year_enterNFL))  
 
-  group_by(name, award_name) %>% 
-  summarize(n())
-  mutate(matching = ifelse(year_enterNFL == YEAR, 1, 0)) %>% 
-  filter(matching == 0) %>% 
-  select(name, year_enterNFL, YEAR, award_name, award_year)
-  group_by(matching) %>% 
-  summarize(n())
-
-
-  group_by(school) %>% 
-  summarize(n()) %>% 
-  print(n=Inf)
   
 
-  
-  group_by(enterNFL) %>% 
-  summarize(n()) %>% 
-  print(n=Inf)
-
-  group_by(name) %>% 
-  summarize(n=n()) %>% 
-  group_by(n) %>% 
-  summarize(n())
-
-
-  group_by(award_name, split) %>% 
-  filter(award_year == min(award_year)) %>% 
-  arrange(award_year) %>% 
-  
-  #summarize(n()) %>% 
-  print(n=Inf)
   
   
   

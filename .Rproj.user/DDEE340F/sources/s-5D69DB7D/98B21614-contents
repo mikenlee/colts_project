@@ -3,7 +3,7 @@ names(dat2)
 
 # Number of awarded players by year (bar graph)   ----
 year_dat <- dat_joined %>% 
-  filter(division == "AA") %>% 
+  filter(division == "A") %>% 
   group_by(award_year, enterNFL) %>% 
   summarize(n = n())
 
@@ -16,8 +16,7 @@ ggplot(year_dat, aes(x = award_year, y = n, fill = enterNFL)) +
   xlab("Award Year")
 
 
-# when did most awards  indicate entry into the NFL?
-# which awards during since that time period didn't result in entering the NFL? ----
+# WHEN did the hit rate of awards shoot up?   ----
 
 dat_joined %>% 
   group_by(award_year) %>% 
@@ -35,11 +34,77 @@ dat_joined %>%
 
 ###2007 hit rate shot up ~ 40% from the previous year to 97.3% 
 
+
+
+# WHICH AWARDS since that time period didn't result in entering the NFL? ----
 dat_joined %>% 
   filter(award_year > 2006,
          enterNFL == "no") %>% 
   select(award_name) %>% 
   distinct()
+
+
+# WHICH AWARDS had the longest history of hit rate of >.5  (not 0/1 because some awards dole out multiple per year) ----
+dat_joined %>% 
+  #total count of each award by year
+  group_by(award_name, award_year) %>% 
+  mutate(total_count = n()) %>% 
+  #total count of each award
+  group_by(award_name) %>% 
+  mutate(total_award_count = n()) %>% 
+  #get hit rate
+  group_by(award_name, award_year, enterNFL) %>% 
+  mutate(miss_count = ifelse(enterNFL == "no", n(), 0),
+         hit_count = ifelse(enterNFL == "yes", n(), 0),
+         hitrate_yearly = hit_count/total_count) %>% 
+  ungroup() %>% 
+  filter(hitrate_yearly > 0.5,
+         !is.na(award_name)) %>% 
+  select(award_name, award_year, hitrate_yearly, total_award_count) %>% 
+  distinct() %>% 
+  #get percentage of total awarded years where there was a success
+  group_by(award_name) %>% 
+  mutate(n_success_years = n(),
+         perc_total = n_success_years / total_award_count) %>% 
+  mutate(mean_success_years = mean(n_success_years)) %>% 
+  arrange(desc(n_success_years)) %>% 
+  print(n=100)
+  
+
+# What is the average hit rate for every award?     (Scatter plot)  ----
+dat_avg_hitrate <- dat_joined %>% 
+  group_by(award_name) %>% 
+  mutate(total_count = n()) %>% 
+  group_by(award_name, enterNFL) %>% 
+  mutate(miss_count = ifelse(enterNFL == "no", n(), 0),
+         hit_count = ifelse(enterNFL == "yes", n(), 0),
+         hitrate_total = hit_count/total_count) %>% 
+  filter(!is.na(award_name),
+         enterNFL == "yes") %>% 
+  ungroup() %>% 
+  select(award_name, miss_count, hit_count, total_count, hitrate_total, division) %>% 
+  distinct() %>% 
+  arrange(desc(total_count), desc(hitrate_total)) %>% 
+  print(n=Inf)
+  
+#plot data
+library(ggrepel)
+
+ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)) +
+  geom_point(pch=21) +
+  ggrepel::geom_label_repel(data = dat_avg_hitrate %>% 
+                     filter(total_count > 50, hitrate_total > 0.5) %>% 
+                     mutate(award_name = str_sub(award_name, start=1, end=-10)), 
+                  aes(label = award_name), box.padding = .8, point.padding = .4, 
+                  color = "grey20", fill = "grey90", size = 3) +
+  geom_hline(yintercept = .9, color = "red") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_fill_discrete(name = "Division") +
+  xlab("Number of Awards Given Out") +
+  ylab("Percentage of Awarded who Entered the NFL")
+
+  
+
 
 # Awards time frame (scatter plot)   ----
 

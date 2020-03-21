@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1584713850869.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3322591935",
+    "id" : "4E90BF21",
+    "lastKnownWriteTime" : 1584792323,
+    "last_content_update" : 1584792323871,
+    "path" : "~/Documents/Personal/colts/awards_analysis.Rmd",
+    "project_path" : "awards_analysis.Rmd",
+    "properties" : {
+        "cursorPosition" : "82,44",
+        "scrollLine" : "80",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

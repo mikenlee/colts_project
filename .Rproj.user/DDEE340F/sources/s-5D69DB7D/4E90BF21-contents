@@ -1,0 +1,156 @@
+---
+title: "NCAAF Division 1-A and 1-AA Awards Analysis"
+author: 
+date: "3/20/2020"
+output: 
+  html_document:
+    theme: sandstone
+    toc: true
+    toc_float: true
+    number_sections: false
+---
+```{r setup, include=FALSE}
+library(rmdformats)
+```
+
+```{r load_scripts, include = FALSE}
+ source('./code/functions.R')
+ source('./code/data_processing.R')
+```
+
+
+### Purpose
+Ensure that all suitable NCAAF talent is examined and assessed    
+    
+    
+### Analytical questions
+* Who are the potential players that are likely to enter the NFL based on their NCAA awards?    
+    + How do you determine the most significant awards?    
+    
+    
+### Data Input
+* Awardees between 1933-2018 (analysis used up to year 2015 since players might not enter the NFL right away after some awards like Freshmen of the Year awards.)
+* There is missing data. For example, J.J. Watt received the Deacon Jones Player of the Year award in 2015 but it is not captured in the data set.      
+    
+    
+### Approach
+1. Determine the total number of awards that were given out by each award. 
+2. Determine how many of those awards resulted in the player entering the NFL.
+3. Identify the awards that led to at least **90%** of their awardees entering the NFL. If **90%** isn't a wide enough net then it can be decreased. 
+4. Identify the 2015 awardees that entered the NFL. 
+5. Identify the awardees that might potentially enter the NFL through the 2020 draft. (I don't have data for this.)    
+    
+    
+### Key Insights
+1. There are **50** awards which resulted in **100%** of the awardees entering the NFL draft. There are **5** more awards, which resulted in at least **90%** of the awardees entering the NFL draft. 
+2. NCAAF players who received these top awards from several years ago should also be considered since some eventually entered the NFL.             
+    
+    
+### Chart Explanation
+Each dot represents an award. The color of each corresponds to the division. The `y-axis` depicts the number of awards given out by each award and the `x-axis` depicts the percentage of the awardees who entered the NFL.         
+```{r chart_data_prep, echo=FALSE}
+dat_avg_hitrate <- dat_joined %>% 
+  group_by(award_name) %>% 
+  mutate(total_count = n()) %>% 
+  group_by(award_name, enterNFL) %>% 
+  mutate(miss_count = ifelse(enterNFL == "no", n(), 0),
+         hit_count = ifelse(enterNFL == "yes", n(), 0),
+         hitrate_total = hit_count/total_count) %>% 
+  filter(!is.na(award_name),
+         enterNFL == "yes") %>% 
+  ungroup() %>% 
+  select(award_name, miss_count, hit_count, total_count, hitrate_total, division) %>% 
+  distinct() %>% 
+  arrange(desc(total_count), desc(hitrate_total)) 
+```
+
+```{r chart, echo=FALSE}
+ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)) +
+  geom_point(pch=21) +
+  ggrepel::geom_label_repel(data = dat_avg_hitrate %>% 
+                     filter(total_count > 50, hitrate_total > 0.5) %>% 
+                     mutate(award_name = str_sub(award_name, start=1, end=-10)), 
+                  aes(label = award_name), box.padding = .8, point.padding = .4, 
+                  color = "grey20", fill = "grey90", size = 3) +
+  geom_hline(yintercept = .9, color = "red") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_fill_discrete(name = "Division") +
+  xlab("Number of Awards Given Out") +
+  ylab("Percentage of Awarded who Entered the NFL")
+```
+    
+    
+### Awards Resulting in the most NFL Players
+The table depicts all of the awards that have resulted in at least **90%** of awardees entering the NFL draft.     
+
+```{r table_prep, echo=FALSE}
+dat_table <- dat_avg_hitrate %>% 
+  select(award_name, total_count, hitrate_total) %>% 
+  mutate(hitrate_total = formattable::percent(hitrate_total, format = "d")) %>% 
+  separate(award_name, into = c("Name of Award", "Scope"), sep="_(?=[^_]+$)") %>% 
+  filter(hitrate_total >= .9) %>% 
+  arrange(desc(hitrate_total)) %>% 
+  rename('Total Number of Awards' = total_count,
+         '% Entered NFL' = hitrate_total)
+
+dat_table <- dat_table %>% 
+  mutate(id = rownames(dat_table)) %>% 
+  select(id, everything())
+  
+```
+
+
+```{r table, echo=FALSE}
+library(formattable)
+formattable::formattable(dat_table, 
+                         align = c("c", "l", "l", "c", "c"),
+                         list(`Name of Award` = formatter("span",
+                                                          style = ~style(color = "grey20", 
+                                                                         font.weight = "bold")),
+                              `Scope` = formatter("span",
+                                                  style = ~style(color = "grey"))))
+
+```
+    
+    
+### 2015 Awardees 
+The table below lists all of the awardees for the above awards in 2015 and when/whether they entered the NFL. They all entered the NFL but at different years. This indicates that college football players who received awards earlier in their college years should also be considered a potential draftee.    
+
+```{r table2_prep, echo=FALSE}
+dat_table_names <- dat_joined %>% 
+  group_by(award_name) %>% 
+  mutate(total_count = n()) %>% 
+  group_by(award_name, enterNFL) %>% 
+  mutate(miss_count = ifelse(enterNFL == "no", n(), 0),
+         hit_count = ifelse(enterNFL == "yes", n(), 0),
+         hitrate_total = hit_count/total_count) %>% 
+  
+  filter(award_year == 2015,
+         hitrate_total >= .9,
+         !is.na(award_name)) %>% 
+  
+  select(award_name, name, enterNFL, year_enterNFL) %>% 
+  separate(award_name, into = c("Name of Award", "Scope"), sep="_(?=[^_]+$)") %>% 
+  rename('2015 Awardee' = name,
+         'Entered NFL?' = enterNFL,
+         'Year Entered NFL' = year_enterNFL)
+  
+#join with previous dat_table to keep order of award names
+dat_table_names <- dat_table %>% 
+    select(id, 'Name of Award', Scope) %>% 
+    left_join(dat_table_names, by = c("Name of Award" = "Name of Award", "Scope" = "Scope"))
+ 
+```
+
+```{r table_names, echo=FALSE}
+library(formattable)
+formattable::formattable(dat_table_names, 
+                         align = c("c", "l", "l", "l", "c", "c"),
+                         list(`Name of Award` = formatter("span",
+                                                          style = ~style(color = "grey20", 
+                                                                         font.weight = "bold")),
+                              `Scope` = formatter("span",
+                                                  style = ~style(color = "grey"))))
+
+```
+
