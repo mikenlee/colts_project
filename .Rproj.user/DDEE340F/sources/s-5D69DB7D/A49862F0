@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1584803623073.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "A49862F0",
+    "lastKnownWriteTime" : 1584801384,
+    "last_content_update" : 1584801384,
+    "path" : "~/Documents/Personal/colts/mockdraft_analysis.Rmd",
+    "project_path" : "mockdraft_analysis.Rmd",
+    "properties" : {
+        "cursorPosition" : "4,12",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

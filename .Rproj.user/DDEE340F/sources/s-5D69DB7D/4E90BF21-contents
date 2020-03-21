@@ -1,13 +1,5 @@
 ---
-title: "NCAAF Division 1-A and 1-AA Awards Analysis"
-author: 
-date: "3/20/2020"
-output: 
-  html_document:
-    theme: sandstone
-    toc: true
-    toc_float: true
-    number_sections: false
+
 ---
 ```{r setup, include=FALSE}
 library(rmdformats)
@@ -48,7 +40,7 @@ Ensure that all suitable NCAAF talent is examined and assessed
     
     
 ### Chart Explanation
-Each dot represents an award. The color of each corresponds to the division. The `y-axis` depicts the number of awards given out by each award and the `x-axis` depicts the percentage of the awardees who entered the NFL. The red line is the **90%** mark. 
+Each dot represents an award. The color of each corresponds to the division. The `x-axis` depicts the number of awards given out by each award and the `y-axis` depicts the percentage of the awardees who entered the NFL. The <span style="color: red;">red line</span> is the **90%** mark. 
 
 ```{r chart_data_prep, echo=FALSE}
 dat_avg_hitrate <- dat_joined %>% 
@@ -78,12 +70,12 @@ ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   scale_fill_discrete(name = "Division") +
   xlab("Number of Awards Given Out") +
-  ylab("Percentage of Awarded who Entered the NFL")
+  ylab("% of Awardees who Entered the NFL")
 ```
     
     
 ### Awards Resulting in the most NFL Players
-The table depicts all of the awards that have resulted in at least **90%** of awardees entering the NFL draft. (Above the red line in the [chart][Chart Explanation].)     
+The table depicts all of the awards that have resulted in at least **90%** of awardees entering the NFL draft. (These are the awards above the <span style="color: red;">red line</span> in the [chart][Chart Explanation].)     
 
 ```{r table_prep, echo=FALSE}
 dat_table <- dat_avg_hitrate %>% 
