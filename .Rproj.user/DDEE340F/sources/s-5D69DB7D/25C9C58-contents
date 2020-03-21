@@ -1,0 +1,10 @@
+name: "Colts Football Research & Strategy"
+output_dir: "."
+navbar:
+  title: "Colts Football Research & Strategy"
+  left:
+    - text: "NCAAF Awards Analysis"
+      href: awards_anaylsis.html
+output:
+  html_document:
+    theme: sandstone
