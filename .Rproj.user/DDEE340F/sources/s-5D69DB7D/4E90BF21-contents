@@ -38,12 +38,12 @@ Ensure that all suitable NCAAF talent is examined and assessed
 2. Determine how many of those awards resulted in the player entering the NFL.
 3. Identify the awards that led to at least **90%** of their awardees entering the NFL. If **90%** isn't a wide enough net then it can be decreased. 
 4. Identify the 2015 awardees that entered the NFL. 
-5. Identify the awardees that might potentially enter the NFL through the 2020 draft. *(I don't have data for this.)*    
+5. Identify the awardees that might potentially enter the NFL through the 2020 draft. *(I don't have data on who received awards in 2019 or 2020 to identify who all should be considered for this upcoming draft.)*    
     
     
 ### Key Insights
 1. There are **50** awards which resulted in **100%** of the awardees entering the NFL draft. There are **5** more awards, which resulted in at least **90%** of the awardees entering the NFL draft. 
-2. Most of these top awards were given to less than 25 players, meaning they are newer awards. The Heisman Trophy is the one exception.
+2. Most of these top awards were given to less than 25 players, meaning they are relatively newer awards. The Heisman Trophy is the one exception.
 3. NCAAF players who received these top awards from several years ago should also be considered since some eventually entered the NFL.             
     
     
@@ -83,7 +83,7 @@ ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)
     
     
 ### Awards Resulting in the most NFL Players
-The table depicts all of the awards that have resulted in at least **90%** of awardees entering the NFL draft.     
+The table depicts all of the awards that have resulted in at least **90%** of awardees entering the NFL draft. (Above the red line in the [chart][Chart Explanation].)     
 
 ```{r table_prep, echo=FALSE}
 dat_table <- dat_avg_hitrate %>% 
@@ -116,7 +116,7 @@ formattable::formattable(dat_table,
     
     
 ### 2015 Awardees 
-The table below lists all of the awardees for the above awards in 2015 and when/whether they entered the NFL. They all entered the NFL but at different years. This indicates that college football players who received awards earlier in their college years should also be considered a potential draftee.    
+The table below lists all of the awardees for the above awards in 2015 and when/whether they entered the NFL. They all entered the NFL at different years. This indicates that college football players who received awards earlier in their college years should also be considered as a potential draftee.    
 
 ```{r table2_prep, echo=FALSE}
 dat_table_names <- dat_joined %>% 
