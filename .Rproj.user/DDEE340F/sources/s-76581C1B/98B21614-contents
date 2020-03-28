@@ -3,7 +3,8 @@ names(dat2)
 
 # Number of awarded players by year (bar graph)   ----
 year_dat <- dat_joined %>% 
-  filter(division == "A") %>% 
+  filter(division == "A",  # <-- change divisions
+         award_year >= 2002) %>% 
   group_by(award_year, enterNFL) %>% 
   summarize(n = n())
 
@@ -73,6 +74,8 @@ dat_joined %>%
 
 # What is the average hit rate for every award?     (Scatter plot)  ----
 dat_avg_hitrate <- dat_joined %>% 
+  filter(award_year >= 2002,
+         award_year <= 2015) %>% 
   group_by(award_name) %>% 
   mutate(total_count = n()) %>% 
   group_by(award_name, enterNFL) %>% 
@@ -92,12 +95,12 @@ library(ggrepel)
 
 ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)) +
   geom_point(pch=21) +
-  ggrepel::geom_label_repel(data = dat_avg_hitrate %>% 
-                     filter(total_count > 50, hitrate_total > 0.5) %>% 
-                     mutate(award_name = str_sub(award_name, start=1, end=-10)), 
-                  aes(label = award_name), box.padding = .8, point.padding = .4, 
+  ggrepel::geom_label_repel(data = dat_avg_hitrate %>%
+                     filter(#hitrate_total > 1,
+                            total_count > 17) ,
+                  aes(label = award_name), box.padding = 1, point.padding = .6,
                   color = "grey20", fill = "grey90", size = 3) +
-  geom_hline(yintercept = .9, color = "red") +
+  geom_hline(yintercept = .75, color = "red") +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   scale_fill_discrete(name = "Division") +
   xlab("Number of Awards Given Out") +

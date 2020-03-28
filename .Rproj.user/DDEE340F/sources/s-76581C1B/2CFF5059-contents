@@ -1,0 +1,12 @@
+test <- tibble(group = c("A", "B", "B", "B", "B","C", "D"), 
+               var = c("r","s", "s", "s", "s","g", "t"),
+               var2 = c(1, 1, 1, 1,1, 2, 3),
+               name = c("Steve", "Mike", "Paul", "Jaimie", "bob", "John", "Marco"),
+               year = c(1988, 2001, 2001, 2002, 2003, 1997, 2001))
+
+test %>% 
+  group_by(year) %>% 
+  mutate(grouped_id = row_number()) %>%
+  spread(key = year, value = name) %>% 
+  select(-grouped_id)
+  

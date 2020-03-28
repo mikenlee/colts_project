@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1585323900004.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "31702426",
+    "id" : "AF3D35AE",
+    "lastKnownWriteTime" : 1585360555,
+    "last_content_update" : 1585360555587,
+    "path" : "~/Documents/Personal/colts/code/tables.R",
+    "project_path" : "code/tables.R",
+    "properties" : {
+        "cursorPosition" : "78,28",
+        "scrollLine" : "66",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

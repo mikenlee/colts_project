@@ -1,95 +1,4 @@
----
 
----
-
-
-```{r setup, include=FALSE, message = FALSE}
-library(rmdformats)
-library(formattable)
-```
-
-```{r load_scripts, include = FALSE}
- source('./code/functions.R')
- source('./code/data_processing.R')
-```
-
-
-### Purpose
-Ensure that all suitable NCAAF talent are considered for scouting.  
-    
-    
-### Objective
-Leverage NCAAF awards to scout potential talent
-     
-     
-### Analytical questions
-* Who are the potential players that are likely to enter the NFL based on their NCAA awards?    
-    + How do you determine the most significant awards?    
-    
-    
-### Data Input
-* There might be some errors in the NFL player list. (I don't see players like SALAAM, RASHAAN or GEORGE, EDDIE who were Heisman winners and NFL draftees. BARRETT, J.T. is another example.) This might be because the data is most comprehensive between 2007 to 2019 as the title of the file suggests. In turn, I scoped the award data according to that time period. Some players will be incorrectly flagged as not having entered the NFL because of these errors. 
-* The data included awardees between 1933-2018 but we scoped it from 2002 to 2015. 
-    + We scoped it at 2002 for reasons stated above. I started it 5 years before 2007 since some who receive an award in 2002 might enter the NFL in 2007.  
-    + We scoped it up to year 2015 since players might not enter the NFL right away after some early awards like Freshman of the Year awards.
-
-   
-    
-### Approach
-1. Determine the total number of awards that were given out by each award. 
-2. Determine how many of those awards resulted in the player entering the NFL.
-3. Identify the awardees that might potentially enter the NFL through the 2020 draft. 
-    
-    
-### Key Insights
-1. There are **16** awards which resulted in **100%** of the awardees entering the NFL draft. There are **44** more awards, which resulted in at least **75%** of the awardees entering the NFL draft. 
-2. All of these top awards are from Division 1-A.
-3. NCAAF players who received these top awards from several years ago should also be considered since some eventually entered the NFL.
-
-    
-    
-### Chart Explanation
-Each dot represents an award. The color of each corresponds to the division. The `x-axis` depicts the number of awards given out by each award and the `y-axis` depicts the percentage of the awardees who entered the NFL. The <span style="color: red;">red line</span> is the **75%** mark. 
-
-```{r chart_data_prep, echo=FALSE}
-dat_avg_hitrate <- dat_joined %>% 
-  filter(award_year >= 2002,
-         award_year <= 2015) %>% 
-  group_by(award_name) %>% 
-  mutate(total_count = n()) %>% 
-  group_by(award_name, enterNFL) %>% 
-  mutate(miss_count = ifelse(enterNFL == "no", n(), 0),
-         hit_count = ifelse(enterNFL == "yes", n(), 0),
-         hitrate_total = hit_count/total_count) %>% 
-  filter(!is.na(award_name),
-         enterNFL == "yes") %>% 
-  ungroup() %>% 
-  select(award_name, miss_count, hit_count, total_count, hitrate_total, division) %>% 
-  distinct() %>% 
-  arrange(desc(total_count), desc(hitrate_total))
-```
-
-```{r chart, echo=FALSE}
-ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)) +
-  geom_point(pch=21) +
-  ggrepel::geom_label_repel(data = dat_avg_hitrate %>%
-                     filter(#hitrate_total > 1,
-                            total_count > 17) ,
-                  aes(label = award_name), box.padding = 1, point.padding = .6,
-                  color = "grey20", fill = "grey90", size = 3) +
-  geom_hline(yintercept = .75, color = "red") +
-  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-  scale_fill_discrete(name = "Division") +
-  xlab("Number of Awards Given Out") +
-  ylab("Percentage of Awarded who Entered the NFL")
-```
-    
-    
-### Awards Resulting in the most NFL Players
-The table below depicts all of the awards between 2007-2015 and their awardees. A player's name in <span style="color: red;font-weight:bold">red font</span> indicates that he never entered the NFL. 
-       
-
-```{r table_prep, echo=FALSE, warning=FALSE}
 dat_table_all <- dat_joined %>% 
   #get hit rate of awards between 2002 and 2015. earlier years skew the data since enterNFL not as available
   filter(award_year >= 2002,
@@ -163,11 +72,23 @@ dat_table_all <- dat_joined %>%
   rename('Total Number of Awards' = total_count,
          '% Entered NFL' = hitrate_total) 
   
-```
 
 
-```{r table, echo=FALSE}
-  
+library(formattable)
+data(mtcars)
+mtcars_tab        <- mtcars 
+make_italic       <- formatter("span", style =  "font-style:italic")
+mtcars_tab$mpg    <- make_italic(mtcars_tab$mpg)
+mtcars_tab$qsec   <- make_italic(mtcars_tab$qsec)
+mtcars_tab %>% 
+  mutate
+names(mtcars_tab$mpg) <- make_italic(names(mtcars_tab))
+formattable(mtcars_tab)
+
+
+
+
+  library(formattable)
 formattable::formattable(dat_table_all, 
                          align = c("c", "l", "l", "c", "c"),
                          list(`Name of Award` = formatter("span",
@@ -226,12 +147,4 @@ formattable::formattable(dat_table_all,
                               `2018_nfl` = FALSE
                               
                               ))
-
-
-```
-    
-    
-
-
-
 

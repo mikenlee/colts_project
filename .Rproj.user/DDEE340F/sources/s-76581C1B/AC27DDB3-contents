@@ -56,3 +56,25 @@ str_filter <- function(x, sep = ",", side = "left", greedy = TRUE) {
 #dat %>% filter (isdup (l))
 
 isdup <- function (x) duplicated (x) | duplicated (x, fromLast = TRUE)
+
+#----
+#function to collapse rows for tables .. used for formattables
+
+# iris %>%
+#   group_by(Species) %>%
+#   slice(1:2) %>%
+#   select(Species, everything()) %>%
+#   collapse_rows_df(Species) %>%
+#   formattable()
+
+collapse_rows_df <- function(df, variable){
+  
+  group_var <- enquo(variable)
+  
+  df %>%
+    group_by(!! group_var) %>%
+    mutate(groupRow = 1:n()) %>%
+    ungroup() %>%
+    mutate(!!quo_name(group_var) := ifelse(groupRow == 1, as.character(!! group_var), "")) %>%
+    select(-c(groupRow))
+}
