@@ -74,7 +74,7 @@ dat_joined %>%
 
 # What is the average hit rate for every award?     (Scatter plot)  ----
 dat_avg_hitrate <- dat_joined %>% 
-  filter(award_year >= 2002,
+  filter(award_year >= 2007,
          award_year <= 2015) %>% 
   group_by(award_name) %>% 
   mutate(total_count = n()) %>% 
@@ -93,7 +93,7 @@ dat_avg_hitrate <- dat_joined %>%
 #plot data
 library(ggrepel)
 
-ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)) +
+awards_scatter_chart <- ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)) +
   geom_point(pch=21) +
   ggrepel::geom_label_repel(data = dat_avg_hitrate %>%
                      filter(#hitrate_total > 1,
@@ -177,16 +177,9 @@ ggplot(hitrate_yearly, aes(x = award_year, y = hit_rate)) +
   geom_bar(stat = "identity") +
   facet_wrap(~award_name)
 
-    filter(award_name == "Defensive Player of the Year") %>% 
-  arrange(award_year) %>% 
-  print(n=Inf)
-  
-summarize(n=n()) %>% 
-  group_by(award_name, award_year) %>% 
-  summarize(award_totalYear = n()) %>% 
-  filter(award_totalYear>1)
+ 
+
 
 # Number of NFL entrants by the number of awards received    ----
 
-dat2 %>% 
-  group_by(name, )
+

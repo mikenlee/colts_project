@@ -5,7 +5,7 @@ output_dir: "."
 output:
   html_document:
     theme: paper
-    toc: true
-    toc_float: false
-    number_sections: false
+    #toc: true
+    #toc_float: false
+    #number_sections: false
     #css: 'styles.css'

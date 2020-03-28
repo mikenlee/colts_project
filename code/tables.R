@@ -1,7 +1,7 @@
 
-dat_table_all <- dat_joined %>% 
+dat_table_prep <- dat_joined %>% 
   #get hit rate of awards between 2002 and 2015. earlier years skew the data since enterNFL not as available
-  filter(award_year >= 2002,
+  filter(award_year >= 2007,
          award_year <= 2015) %>% 
   group_by(award_name) %>% 
   mutate(total_count = n()) %>% 
@@ -25,8 +25,9 @@ dat_table_all <- dat_joined %>%
   #paste whether they entered the NFL
   mutate(name = paste(name, enterNFL, sep = "_")) %>% 
   select(-enterNFL) %>% 
-  #scope on 2007
-  filter(award_year >= 2007) %>% 
+  
+  #scope on 2012
+  filter(award_year >= 2012) %>% 
   
   #spread out year columns
   group_by(award_name, award_year) %>% 
@@ -34,7 +35,14 @@ dat_table_all <- dat_joined %>%
   pivot_wider(names_from = award_year, values_from = name) %>% 
   select(-grouped_id) %>% 
   arrange(desc(hitrate_total), desc(total_count)) %>% 
-  ungroup() %>% 
+  ungroup() 
+
+# format --
+dat_table_all <- dat_table_prep %>% 
+  # add id
+  mutate(id = as.integer(factor(award_name,
+                                 levels = unique(dat_table_prep$award_name[rev(order(dat_table_prep$hitrate_total,
+                                                                                     dat_table_prep$total_count))])))) %>% 
   
   # collapse rows. function in functions.R
   mutate(award_count_rate = paste(award_name, total_count, hitrate_total, sep = "~")) %>% #new column to collapse on
@@ -45,11 +53,11 @@ dat_table_all <- dat_joined %>%
   ungroup() %>%
   
   #separate out whether they entered the nfl
-  separate("2007", into = c("2007", "2007_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2008", into = c("2008", "2008_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2009", into = c("2009", "2009_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2010", into = c("2010", "2010_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2011", into = c("2011", "2011_nfl"), sep="_(?=[^_]+$)") %>% 
+  # separate("2007", into = c("2007", "2007_nfl"), sep="_(?=[^_]+$)") %>% 
+  # separate("2008", into = c("2008", "2008_nfl"), sep="_(?=[^_]+$)") %>% 
+  # separate("2009", into = c("2009", "2009_nfl"), sep="_(?=[^_]+$)") %>% 
+  # separate("2010", into = c("2010", "2010_nfl"), sep="_(?=[^_]+$)") %>% 
+  # separate("2011", into = c("2011", "2011_nfl"), sep="_(?=[^_]+$)") %>% 
   separate("2012", into = c("2012", "2012_nfl"), sep="_(?=[^_]+$)") %>% 
   separate("2013", into = c("2013", "2013_nfl"), sep="_(?=[^_]+$)") %>% 
   separate("2014", into = c("2014", "2014_nfl"), sep="_(?=[^_]+$)") %>% 
@@ -62,35 +70,24 @@ dat_table_all <- dat_joined %>%
  
   # replace all NAs with blank
   replace(., is.na(.), "") %>% 
-  # add id
-  mutate(row = row_number()) %>% 
-  select(row, everything()) %>%   
+  
   # reformat 
-  mutate(hitrate_total = formattable::percent(hitrate_total, format = "d", digits = 0)) %>% 
-  select(row:hitrate_total, `2007`, `2008`, `2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, 
+  mutate(hitrate_total = formattable::percent(hitrate_total, format = "d", digits = 0),
+         hitrate_total = as.character(hitrate_total),
+         hitrate_total = ifelse(hitrate_total == "NA", "", hitrate_total)) %>% 
+  select(id, `Name of Award`, Scope, total_count, hitrate_total, `2012`, `2013`, `2014`, `2015`, 
          `2016`, `2017`, `2018`, everything()) %>% 
-  rename('Total Number of Awards' = total_count,
-         '% Entered NFL' = hitrate_total) 
+  rename('Awards Given (2007-2015)' = total_count,
+         '% Entered NFL' = hitrate_total) %>% 
+  arrange(id)
   
 
 
+
 library(formattable)
-data(mtcars)
-mtcars_tab        <- mtcars 
-make_italic       <- formatter("span", style =  "font-style:italic")
-mtcars_tab$mpg    <- make_italic(mtcars_tab$mpg)
-mtcars_tab$qsec   <- make_italic(mtcars_tab$qsec)
-mtcars_tab %>% 
-  mutate
-names(mtcars_tab$mpg) <- make_italic(names(mtcars_tab))
-formattable(mtcars_tab)
-
-
-
-
-  library(formattable)
-formattable::formattable(dat_table_all, 
-                         align = c("c", "l", "l", "c", "c"),
+library(DT)
+award_player_table <- as.datatable(formattable::formattable(dat_table_all, 
+                         align = c("c", "l", "c", "c", "c", "l"),
                          list(`Name of Award` = formatter("span",
                                                           style = ~style(color = "grey20", 
                                                                          font.weight = "bold")),
@@ -98,31 +95,49 @@ formattable::formattable(dat_table_all,
                                                   style = ~style(color = "grey")),
                               `2007` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2007_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2007_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2007_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2008` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2008_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2008_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2008_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2009` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2009_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2009_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2009_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2010` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2010_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2010_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2010_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2011` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2011_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2011_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2011_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2012` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2012_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2012_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2012_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2013` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2013_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2013_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2013_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2014` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2014_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2014_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2014_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2015` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2015_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2015_nfl` == "no", "bold", NA))),
+                                                                   font.weight = ifelse(dat_table_all$`2015_nfl` == "no", "bold", NA),
+                                                                   "background-color" = csscolor("#e8e8e8", format = "hex"),
+                                                                   display = "block")),
                               `2016` = formatter("span",
                                                  style = x ~ style(color = ifelse(dat_table_all$`2016_nfl` == "no", "red", "black"),
                                                                    font.weight = ifelse(dat_table_all$`2016_nfl` == "no", "bold", NA))),
@@ -146,5 +161,5 @@ formattable::formattable(dat_table_all,
                               `2017_nfl` = FALSE,
                               `2018_nfl` = FALSE
                               
-                              ))
+                              )), rownames = FALSE)
 

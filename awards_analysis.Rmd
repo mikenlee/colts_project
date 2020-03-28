@@ -6,231 +6,72 @@
 ```{r setup, include=FALSE, message = FALSE}
 library(rmdformats)
 library(formattable)
+library(DT)
 ```
 
 ```{r load_scripts, include = FALSE}
- source('./code/functions.R')
- source('./code/data_processing.R')
+source('./code/functions.R')
+source('./code/data_processing.R')
+source('./code/graphics.R')
+source('./code/tables.R')
 ```
 
 
 ### Purpose
 Ensure that all suitable NCAAF talent are considered for scouting.  
-    
+<br>    
     
 ### Objective
-Leverage NCAAF awards to scout potential talent
+Leverage NCAAF awards to scout potential talent by producing a list of all awardees    
+<br>    
      
-     
-### Analytical questions
-* Who are the potential players that are likely to enter the NFL based on their NCAA awards?    
-    + How do you determine the most significant awards?    
-    
-    
 ### Data Input
-* There might be some errors in the NFL player list. (I don't see players like SALAAM, RASHAAN or GEORGE, EDDIE who were Heisman winners and NFL draftees. BARRETT, J.T. is another example.) This might be because the data is most comprehensive between 2007 to 2019 as the title of the file suggests. In turn, I scoped the award data according to that time period. Some players will be incorrectly flagged as not having entered the NFL because of these errors. 
-* The data included awardees between 1933-2018 but we scoped it from 2002 to 2015. 
-    + We scoped it at 2002 for reasons stated above. I started it 5 years before 2007 since some who receive an award in 2002 might enter the NFL in 2007.  
-    + We scoped it up to year 2015 since players might not enter the NFL right away after some early awards like Freshman of the Year awards.
-
-   
-    
+* There might be some errors in the NFL player list. (I don't see players like SALAAM, RASHAAN or GEORGE, EDDIE who were Heisman winners and NFL draftees. BARRETT, J.T. is another example.) This might be because the data is most comprehensive between 2007 to 2019 as the title of the file suggests. In turn, we scoped the award data according to that time period. Some players will be incorrectly flagged as not having entered the NFL because of these errors. 
+* The data included awardees between 1933-2018 but we scoped it from 2007 to 2015. 
+    + We scoped it at 2007 for reasons stated above. 
+    + We scoped it up to year 2015 since players might not enter the NFL right away after some early awards like Freshman of the Year awards.  
+<br>    
+      
 ### Approach
 1. Determine the total number of awards that were given out by each award. 
 2. Determine how many of those awards resulted in the player entering the NFL.
-3. Identify the awardees that might potentially enter the NFL through the 2020 draft. 
-    
+3. Identify the awardees that might potentially enter the NFL through the 2020 draft.  
+<br>    
     
 ### Key Insights
-1. There are **16** awards which resulted in **100%** of the awardees entering the NFL draft. There are **44** more awards, which resulted in at least **75%** of the awardees entering the NFL draft. 
+1. There are **37** awards (2007-2015) which resulted in **100%** of the awardees entering the NFL draft. There are **24** more awards, which resulted in at least **75%** of the awardees entering the NFL draft. 
 2. All of these top awards are from Division 1-A.
-3. NCAAF players who received these top awards from several years ago should also be considered since some eventually entered the NFL.
-
-    
-    
+3. NCAAF players who received these top awards from several years ago should also be considered since some eventually entered the NFL.  
+<br>    
+     
 ### Chart Explanation
-Each dot represents an award. The color of each corresponds to the division. The `x-axis` depicts the number of awards given out by each award and the `y-axis` depicts the percentage of the awardees who entered the NFL. The <span style="color: red;">red line</span> is the **75%** mark. 
-
-```{r chart_data_prep, echo=FALSE}
-dat_avg_hitrate <- dat_joined %>% 
-  filter(award_year >= 2002,
-         award_year <= 2015) %>% 
-  group_by(award_name) %>% 
-  mutate(total_count = n()) %>% 
-  group_by(award_name, enterNFL) %>% 
-  mutate(miss_count = ifelse(enterNFL == "no", n(), 0),
-         hit_count = ifelse(enterNFL == "yes", n(), 0),
-         hitrate_total = hit_count/total_count) %>% 
-  filter(!is.na(award_name),
-         enterNFL == "yes") %>% 
-  ungroup() %>% 
-  select(award_name, miss_count, hit_count, total_count, hitrate_total, division) %>% 
-  distinct() %>% 
-  arrange(desc(total_count), desc(hitrate_total))
-```
+Each dot represents an award. The color of each corresponds to the division. The `x-axis` depicts the number of awards given out by each award and the `y-axis` depicts the percentage of the awardees who entered the NFL. The <span style="color: red;">red line</span> is the **75%** mark.  
 
 ```{r chart, echo=FALSE}
-ggplot(dat_avg_hitrate, aes(x = total_count, y = hitrate_total, fill = division)) +
-  geom_point(pch=21) +
-  ggrepel::geom_label_repel(data = dat_avg_hitrate %>%
-                     filter(#hitrate_total > 1,
-                            total_count > 17) ,
-                  aes(label = award_name), box.padding = 1, point.padding = .6,
-                  color = "grey20", fill = "grey90", size = 3) +
-  geom_hline(yintercept = .75, color = "red") +
-  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-  scale_fill_discrete(name = "Division") +
-  xlab("Number of Awards Given Out") +
-  ylab("Percentage of Awarded who Entered the NFL")
-```
-    
-    
-### Awards Resulting in the most NFL Players
-The table below depicts all of the awards between 2007-2015 and their awardees. A player's name in <span style="color: red;font-weight:bold">red font</span> indicates that he never entered the NFL. 
-       
+#from graphics.R
+awards_scatter_chart
+```  
 
-```{r table_prep, echo=FALSE, warning=FALSE}
-dat_table_all <- dat_joined %>% 
-  #get hit rate of awards between 2002 and 2015. earlier years skew the data since enterNFL not as available
-  filter(award_year >= 2002,
-         award_year <= 2015) %>% 
-  group_by(award_name) %>% 
-  mutate(total_count = n()) %>% 
-  group_by(award_name, enterNFL) %>% 
-  mutate(miss_count = ifelse(enterNFL == "no", n(), 0),
-         hit_count = ifelse(enterNFL == "yes", n(), 0),
-         hitrate_total = hit_count/total_count) %>% 
-  ungroup() %>% 
-  #fill in hitrate_total of misses (0) with the hitrate
-  group_by(award_name) %>% 
-  arrange(award_name, desc(hitrate_total)) %>% 
-  mutate(hitrate_total = hitrate_total[1]) %>% 
-  ungroup() %>% 
-  #get list of awards between 2002 and 2015 and their hit rates
-  select(award_name, total_count, hitrate_total) %>% 
-  distinct() %>% 
+<br>    
+     
+### Awards List
+The table below depicts the **171 awards** between 2012-2018 and their awardees. A player's name in <span style="color: red;font-weight:bold">red font</span> indicates that the player hasn't entered the NFL. The columns with a <span style="color: darkgray;font-weight:bold">gray background</span> are the years included in the calculation for the hit rate (2007-2015).
   
-  #add awardees 
-  left_join(dat_joined, by = c("award_name", "award_name")) %>% 
-  select(award_name, total_count, hitrate_total, award_year, name, enterNFL) %>% 
-  #paste whether they entered the NFL
-  mutate(name = paste(name, enterNFL, sep = "_")) %>% 
-  select(-enterNFL) %>% 
-  #scope on 2007
-  filter(award_year >= 2007) %>% 
-  
-  #spread out year columns
-  group_by(award_name, award_year) %>% 
-  mutate(grouped_id = row_number()) %>% #add an index for spread
-  pivot_wider(names_from = award_year, values_from = name) %>% 
-  select(-grouped_id) %>% 
-  arrange(desc(hitrate_total), desc(total_count)) %>% 
-  ungroup() %>% 
-  
-  # collapse rows. function in functions.R
-  mutate(award_count_rate = paste(award_name, total_count, hitrate_total, sep = "~")) %>% #new column to collapse on
-  select(award_count_rate, everything(), -award_name, -total_count, -hitrate_total) %>%
-  group_by(award_count_rate) %>%
-  collapse_rows_df(award_count_rate) %>%
-  separate(award_count_rate, into = c("award_name", "total_count", "hitrate_total"), sep = "~") %>%
-  ungroup() %>%
-  
-  #separate out whether they entered the nfl
-  separate("2007", into = c("2007", "2007_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2008", into = c("2008", "2008_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2009", into = c("2009", "2009_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2010", into = c("2010", "2010_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2011", into = c("2011", "2011_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2012", into = c("2012", "2012_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2013", into = c("2013", "2013_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2014", into = c("2014", "2014_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2015", into = c("2015", "2015_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2016", into = c("2016", "2016_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2017", into = c("2017", "2017_nfl"), sep="_(?=[^_]+$)") %>% 
-  separate("2018", into = c("2018", "2018_nfl"), sep="_(?=[^_]+$)") %>% 
-  # separate out scope
-  separate(award_name, into = c("Name of Award", "Scope"), sep="_(?=[^_]+$)") %>% 
- 
-  # replace all NAs with blank
-  replace(., is.na(.), "") %>% 
-  # add id
-  mutate(row = row_number()) %>% 
-  select(row, everything()) %>%   
-  # reformat 
-  mutate(hitrate_total = formattable::percent(hitrate_total, format = "d", digits = 0)) %>% 
-  select(row:hitrate_total, `2007`, `2008`, `2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, 
-         `2016`, `2017`, `2018`, everything()) %>% 
-  rename('Total Number of Awards' = total_count,
-         '% Entered NFL' = hitrate_total) 
-  
-```
 
 
 ```{r table, echo=FALSE}
-  
-formattable::formattable(dat_table_all, 
-                         align = c("c", "l", "l", "c", "c"),
-                         list(`Name of Award` = formatter("span",
-                                                          style = ~style(color = "grey20", 
-                                                                         font.weight = "bold")),
-                              `Scope` = formatter("span",
-                                                  style = ~style(color = "grey")),
-                              `2007` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2007_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2007_nfl` == "no", "bold", NA))),
-                              `2008` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2008_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2008_nfl` == "no", "bold", NA))),
-                              `2009` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2009_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2009_nfl` == "no", "bold", NA))),
-                              `2010` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2010_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2010_nfl` == "no", "bold", NA))),
-                              `2011` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2011_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2011_nfl` == "no", "bold", NA))),
-                              `2012` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2012_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2012_nfl` == "no", "bold", NA))),
-                              `2013` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2013_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2013_nfl` == "no", "bold", NA))),
-                              `2014` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2014_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2014_nfl` == "no", "bold", NA))),
-                              `2015` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2015_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2015_nfl` == "no", "bold", NA))),
-                              `2016` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2016_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2016_nfl` == "no", "bold", NA))),
-                              `2017` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2017_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2017_nfl` == "no", "bold", NA))),
-                              `2018` = formatter("span",
-                                                 style = x ~ style(color = ifelse(dat_table_all$`2018_nfl` == "no", "red", "black"),
-                                                                   font.weight = ifelse(dat_table_all$`2018_nfl` == "no", "bold", NA))),
-                              
-                              `2007_nfl` = FALSE,
-                              `2008_nfl` = FALSE,
-                              `2009_nfl` = FALSE,
-                              `2010_nfl` = FALSE,
-                              `2011_nfl` = FALSE,
-                              `2012_nfl` = FALSE,
-                              `2013_nfl` = FALSE,
-                              `2014_nfl` = FALSE,
-                              `2015_nfl` = FALSE,
-                              `2016_nfl` = FALSE,
-                              `2017_nfl` = FALSE,
-                              `2018_nfl` = FALSE
-                              
-                              ))
-
+#from tables.R
+award_player_table
 
 ```
-    
-    
+  
+<br>  
+
+### Future Work
+* Capture the hit rate for the most recent years and then develop what success looks like for each cohort with each additional year
+* Define hit rate differently: making it on an active roster, practice squad, tryout/workout, or training camp, etc.
+
+
 
 
 

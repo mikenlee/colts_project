@@ -1,0 +1,14 @@
+library(formattable)
+
+data <- data.frame(id = 1:10, x = rbinom(10, 100, 0.8))
+
+formattable(data, list(x = formatter("span",
+                                     style = x ~ style(
+                                       display = "inline-block",
+                                       direction = "rtl",
+                                       "border-radius" = "4px",
+                                       "padding-right" = "2px",
+                                       "background-color" = csscolor("lightgray"),
+                                       width = percent(proportion(x)),
+                                       color = csscolor(gradient(x, "darkgreen", "red"))
+                                     ))))
